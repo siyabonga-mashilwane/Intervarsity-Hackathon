@@ -12,17 +12,14 @@
 ## 👥 Members
 | Name     | Role                | Institution           | Discord Handle | Email |
 |----------|---------------------|-----------------------| -------------------|-------------|
-| **Name 1**   | Backend Developer   | University of Cape Town | name1 | <email1@gmail.com> |
-| **Name 2**   | Frontend Developer  | University of the Witwatersrand | name2 | <email2@gmail.com> |
-| **Name 3**   | Designer            | University of Johannesburg | name3 | <email3@gmail.com> |
-| **Name 4**   | Q.A Tester          | University of the Western Cape | name4 | <email4@gmail.com> |
+| **Siyabonga Mashilwane**   | Backend Developer   | University of the Western Cape | siyasto_ | 4255147@myuwc.ac.za |
+| **Moloti Kgaphola**   | Frontend Developer  | University of the Western Cape | molotikgaphola_59685 | 4356470@myuwc.ac.za |
+| **Ernest chiembe**   | Designer            | University of the Western Cape | erny5544 | 4324549@myuwc.ac.za |
+| **Blessing Banda**   | AI model          | University of the Western Cape | patrioticcobra | 4340659@myuwc.ac.za|
 
 ## 🏫 Institution
-``` c
-// TODO: Fill-in the name of the institution your
-// team is competing under.
-```
+University of the Western Cape
 
 ## 📧 Other Contact Info
-- GitHub Repo: <https://github.com/user-name/repo-name>
+- GitHub Repo: (https://github.com/siyabonga-mashilwane/Intervarsity-Hackathon)
 - Other Info (if available): LinkedIn, Website, etc.
