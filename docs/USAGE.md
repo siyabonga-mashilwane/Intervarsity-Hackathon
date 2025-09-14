@@ -31,7 +31,7 @@ Open terminal first then follow instructions
 // TODO: Link your demo video and PowerPoint here
 ```
 Check out the Demos: 
-- [Demo Video](../demo/demo.mp4)
+- [Demo Video](https://drive.google.com/file/d/1XzKi9vUN34VOBTZIDNwBD24Y0ofxeLvC/view?usp=drive_link)
 - [Demo Presentation](../demo/demo.pptx)
 
 ## 📌 Notes
