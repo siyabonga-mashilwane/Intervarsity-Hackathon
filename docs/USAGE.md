@@ -16,9 +16,13 @@ npm start
 ``` c
 // TODO: Provide step-by-step usage instructions for judges/users.
 ```
-1. Step 1 -> Do this
-2. Step 2 -> Then this
-3. Step 3 -> See the output/result
+Open terminal first then follow instructions
+1. Step 1 -> ```git clone https://github.com/siyabonga-mashilwane/Intervarsity-Hackathon/```
+2. Step 2 -> ```cd Intervarsity-Hackathon/src/Server```
+3. Step 3 -> run ```npm start```
+4. step4 -> ```cd ../cherry-bomb-proto```
+5. step5 -> ```run npm start```
+6. step6 -> Access website via localhost:3001
 
 ## 🎥 Demo
 ``` c
