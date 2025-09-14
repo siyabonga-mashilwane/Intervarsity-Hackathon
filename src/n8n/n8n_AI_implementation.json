@@ -1,0 +1,455 @@
+{
+  "name": "AI matchMaker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -320,
+        -560
+      ],
+      "id": "77570d3a-1828-4d42-bac0-2aa5fd1dd057",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, name, interests \nFROM users \nWHERE is_matched = 0;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -80,
+        -560
+      ],
+      "id": "29fd41a4-5146-4925-be25-91805b032012",
+      "name": "Execute a SQL query",
+      "credentials": {
+        "mySql": {
+          "id": "EHBb5Wm5XlOngY8Z",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all the records from the previous MySQL node\nconst allUsers = $input.all();\n\n// Check if there are at least 2 unmatched users\nif (allUsers.length >= 2) {\n  return [{\n    json: {\n      user1: allUsers[0].json,\n      user2: allUsers[1].json,\n      user1_id: allUsers[0].json.id, \n      user2_id: allUsers[1].json.id \n    }\n  }];\n} else {\n  return [];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -560
+      ],
+      "id": "061a619b-5cb0-4930-9a72-c1e9ed3eb36f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write a fun one-sentence icebreaker for {{ $json.user1.name }} and {{ $json.user2.name }} ",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        336,
+        -560
+      ],
+      "id": "1c209f56-905d-4ecc-a278-5c47a10c0710",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $input.first().json;\n\n// Extract icebreaker text as a string\nlet icebreakerText = typeof aiResponse === 'object'\n    ? aiResponse.response || JSON.stringify(aiResponse)\n    : aiResponse;\n\n// Escape single quotes for SQL\nicebreakerText = icebreakerText.replace(/'/g, \"\\\\'\");\n\n// Get user IDs from pairing node\nconst pairData = $('Code').first().json;\n\nreturn [\n  {\n    json: {\n      user1_id: pairData.user1.id,\n      user2_id: pairData.user2.id,\n      icebreaker_text: icebreakerText,\n      status: 'active'\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -560
+      ],
+      "id": "d8ad84b4-d5a2-4d6e-9703-2e94872b2c98",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "START TRANSACTION;\n\nINSERT INTO matches (user1_id, user2_id, icebreaker_text, status)\nVALUES ({{$json.user1_id}}, {{$json.user2_id}}, '{{$json.icebreaker_text}}', 'active');\n\nUPDATE users \nSET is_matched = 1 \nWHERE id IN ({{$json.user1_id}}, {{$json.user2_id}});\n\nCOMMIT;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        -192,
+        -368
+      ],
+      "id": "c755c01d-d4c7-469a-a9d7-2ba2c63a2b85",
+      "name": "Execute a SQL query1",
+      "credentials": {
+        "mySql": {
+          "id": "EHBb5Wm5XlOngY8Z",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This node does nothing but show the data it receives\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        -320
+      ],
+      "id": "e8abfd68-808e-496d-a812-0899f0948851",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        -880
+      ],
+      "id": "220c937b-f08f-42a8-b115-693401ba2427",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM events\nWHERE FIND_IN_SET('{{$json[\"interests\"].split(\",\")[0].trim()}}', interests)\n   OR FIND_IN_SET('{{$json[\"interests\"].split(\",\")[1].trim()}}', interests)\n   OR FIND_IN_SET('{{$json[\"interests\"].split(\",\")[2].trim()}}', interests)\nORDER BY event_time ASC\nLIMIT 5;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        1120,
+        -864
+      ],
+      "id": "32ba9428-f119-497d-8ecf-65df3aa00520",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "EHBb5Wm5XlOngY8Z",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -896
+      ],
+      "id": "afc8b20b-3d19-4552-80da-834d71e204a6",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ROgDUDxX1oOE7bz2",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        -880
+      ],
+      "id": "51aeeceb-2c88-40f6-a557-e0a13aafdc97",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a friendly social assistant. \n\nA user named {{ $('Execute a SQL query4').item.json.name }} with has interests: {{$json[\"interests\"]}}. \nHere are some upcoming events that might match their interests:\n\nRead the table of events\n\nSuggest a personalized event or activity the user might enjoy. \n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        -1056
+      ],
+      "id": "688249d4-762e-498c-a677-f4cc211817dd",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM users;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        400,
+        -880
+      ],
+      "id": "b53da63d-a871-49b5-9da1-17fb6d24cdb4",
+      "name": "Execute a SQL query3",
+      "credentials": {
+        "mySql": {
+          "id": "EHBb5Wm5XlOngY8Z",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM users\nWHERE id != {{$json[\"id\"]}}\n  AND (\n    interests LIKE CONCAT('%', SUBSTRING_INDEX('{{$json[\"interests\"]}}', ',', 1), '%')\n    OR interests LIKE CONCAT('%', SUBSTRING_INDEX('{{$json[\"interests\"]}}', ',', -1), '%')\n  )\nLIMIT 3;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        928,
+        -864
+      ],
+      "id": "99ca1838-92c8-4b83-849a-84beed8af3c3",
+      "name": "Execute a SQL query4",
+      "credentials": {
+        "mySql": {
+          "id": "EHBb5Wm5XlOngY8Z",
+          "name": "MySQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        336,
+        -384
+      ],
+      "id": "e0d4afc6-f1e4-412d-8eaf-f69c1ade8868",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ROgDUDxX1oOE7bz2",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        32,
+        -368
+      ],
+      "id": "14b5473f-8d66-4d6d-b48f-120bef3c8131",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Execute a SQL query4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query4": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9f1b863c-e81a-4e17-8713-77c40276e3c0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dbab8085e2489399d56a84d671de012935e7aa9e23e2f326d3b7071104c6d739"
+  },
+  "id": "zPrSRFgtq2cnaC0Q",
+  "tags": []
+}
