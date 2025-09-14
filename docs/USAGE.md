@@ -19,10 +19,12 @@ npm start
 Open terminal first then follow instructions
 1. Step 1 -> ```git clone https://github.com/siyabonga-mashilwane/Intervarsity-Hackathon/```
 2. Step 2 -> ```cd Intervarsity-Hackathon/src/Server```
-3. Step 3 -> run ```npm start```
-4. step4 -> ```cd ../cherry-bomb-proto```
-5. step5 -> ```run npm start```
-6. step6 -> Access website via localhost:3001
+3. step3 -> ```run npm install```
+4. Step4 -> run ```npm start```
+5. step5 -> ```cd ../cherry-bomb-proto```
+6. step6 -> ```run npm install```
+7. step7 -> ```run npm start```
+8. step8 -> Access website via localhost:3001
 
 ## 🎥 Demo
 ``` c
